@@ -81,7 +81,7 @@ class Simulator:
     def agg_file(self, folder):
         '''tranforms a folder of klines in ione DF with indicators'''
         
-        if os.path.isfile("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame)) and not self.force_reag:
+        if os.path.isfile("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame)) and self.force_reag == False:
             print("DF already done")
             df = pd.read_csv("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame))
             return df
