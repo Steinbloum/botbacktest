@@ -1,6 +1,7 @@
 
 import pandas as pd
 from simulators import Simulator, Wallet
+from main import folder
 
 
 
@@ -99,10 +100,19 @@ class Bot:
         amount *= mode
         return amount
 
-class bollinger_bot(Bot):
+class Bollinger_bot(Bot):
     def __init__(self, simulator, wallet, wallet_allocation=0.1):
         super().__init__(simulator, wallet, wallet_allocation=wallet_allocation)
+    
+    def analyse(self):
+        df = pd.DataFrame({"Time":self.simulator.df.index[-1], 'Bol_cross_up' : self.simulator.df.bolupcross[-1], 
+        'bol_cross-down' : self.simulator.df.boldowncross[-1], 'bolmav': self.simulator.df.bolmav[-1]})
+        return df
 
 
 wallet = Wallet()
-eth
+ethusdt15m = Simulator('ethusdt15m', folder, 'ETHUSDT', '15m')
+bolbot = Bollinger_bot(ethusdt15m, wallet)
+print(bolbot.wallet)
+for n in range(250,500):
+    ethusdt15m.update_df(n)
