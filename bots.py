@@ -1,8 +1,8 @@
-
+from numpy import not_equal
 import pandas as pd
 from simulators import Simulator, Wallet
 from main import folder
-
+import time
 
 
 class Bot:
@@ -10,15 +10,14 @@ class Bot:
     wallet allocation  and simulator.
     Stategy set upo in subclass"""
 
-    def __init__(self, simulator, wallet, wallet_allocation = 0.1):
-        self.wallet = wallet.balance*wallet_allocation
+    def __init__(self, simulator, wallet, wallet_allocation=0.1):
+        self.wallet = wallet.balance * wallet_allocation
         self.simulator = simulator
         self.open_position = False
         self.open_order = False
         self.pnl = 0
         self.profit = 0
-        self.history = pd.DataFrame(
-        )
+        self.history = pd.DataFrame()
         self.side = "neutral"
         self.position_size = 0
         self.position_value = 0
@@ -59,7 +58,7 @@ class Bot:
                 "qtt": qtt,
                 "Price": price,
                 "Pnl": 0,
-                "motive":"OPEN"
+                "motive": "OPEN",
             },
             ignore_index=True,
         )
@@ -90,35 +89,58 @@ class Bot:
         self.position_value = pos_val
         return pos_val
 
-    def apply_fees(amount, mode='market', market = 0.04, limit = 0.02):
+    def apply_fees(amount, mode="market", market=0.04, limit=0.02):
 
-        '''applies market or limit fees on an amount, can be param, default is binance fees'''
-        if mode == 'market':
+        """applies market or limit fees on an amount, can be param, default is binance fees"""
+        if mode == "market":
             mode = market
-        elif mode == 'limit':
+        elif mode == "limit":
             mode = limit
         amount *= mode
         return amount
 
+
 class Bollinger_bot(Bot):
     def __init__(self, simulator, wallet, wallet_allocation=0.1):
         super().__init__(simulator, wallet, wallet_allocation=wallet_allocation)
-        self.analist_df = self.analyse()
-    
+        self.analist_df = None
+
     def analyse(self):
-        df = pd.DataFrame({"Time":self.simulator.df.index[-1], 'bol_cross_up' : self.simulator.df.bolupcross[-1], 
-        'bol_cross-down' : self.simulator.df.boldowncross[-1], 'bolmav': self.simulator.df.bolmav[-1]}, index = [0])
-        df = df.set_index('Time')
+        df = pd.DataFrame(
+            {
+                "Time": self.simulator.get_last_time(),
+                "bolupcross": self.simulator.get_last("bolupcross"),
+                "boldowncross": self.simulator.get_last("boldowncross"),
+                "bolmav": self.simulator.get_last("bolmav"),
+            },
+            index=[0],
+        )
+        df = df.set_index("Time")
+
+        if self.analist_df is not None:
+            ls = ["bolupcross", "boldowncross"]
+            for bol in ls:
+                if self.simulator.get_last(bol) != 0:
+                    time.sleep(1)
+                    if self.analist_df[bol].iloc[-1] != 0:
+                        time.sleep(1)
+                        df[bol].iloc[-1] = self.analist_df[bol].iloc[-1] + 1
         self.analist_df = df
-        print(df)
         return df
+
+    def run(self):
+        
+
+
 
 
 
 wallet = Wallet()
-ethusdt15m = Simulator('ethusdt15m', folder, 'ETHUSDT', '15m')
+ethusdt15m = Simulator("ethusdt15m", folder, "ETHUSDT", "15m")
 bolbot = Bollinger_bot(ethusdt15m, wallet)
 print(bolbot.wallet)
-for n in range(250,500):
+for n in range(251, 500):
     ethusdt15m.update_df(n)
-    bolbot.analyse()
+    print(bolbot.analyse())
+    print(n)
+    print(bolbot.analist_df.bolmav[-1])

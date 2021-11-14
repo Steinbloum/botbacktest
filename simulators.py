@@ -1,11 +1,14 @@
 from ta.momentum import rsi
 from ta.volume import money_flow_index
 from ta.trend import ema_indicator, macd, EMAIndicator, macd_signal
-from ta.volatility import bollinger_hband_indicator, bollinger_lband_indicator, bollinger_mavg
+from ta.volatility import (
+    bollinger_hband_indicator,
+    bollinger_lband_indicator,
+    bollinger_mavg,
+)
 import os
 import glob
 import pandas as pd
-
 
 
 class Wallet:
@@ -30,7 +33,9 @@ class Simulator:
     if force reaggs, overwrtie file
     """
 
-    def __init__(self, name, folder, ticker="BTCUSDT", time_frame="1m", force_reagg = False):
+    def __init__(
+        self, name, folder, ticker="BTCUSDT", time_frame="1m", force_reagg=False
+    ):
         self.name = name
         self.force_reag = force_reagg
         self.ticker = ticker
@@ -79,11 +84,18 @@ class Simulator:
         return last_close
 
     def agg_file(self, folder):
-        '''tranforms a folder of klines in ione DF with indicators'''
-        
-        if os.path.isfile("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame)) and self.force_reag == False:
+        """tranforms a folder of klines in ione DF with indicators"""
+
+        if (
+            os.path.isfile(
+                "agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame)
+            )
+            and self.force_reag == False
+        ):
             print("DF already done")
-            df = pd.read_csv("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame))
+            df = pd.read_csv(
+                "agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame)
+            )
             return df
 
         else:
@@ -101,7 +113,7 @@ class Simulator:
                 df["macd"] = macd(df.close)
                 df["macds"] = macd_signal(df.close)
                 df["bolupcross"] = bollinger_hband_indicator(df.close)
-                df['bolmav'] = bollinger_mavg(df.close)
+                df["bolmav"] = bollinger_mavg(df.close)
                 df["boldowncross"] = bollinger_lband_indicator(df.close)
                 df["EMA10"] = ema_indicator(df.close, window=10)
                 df["EMA25"] = ema_indicator(df.close, window=25)
@@ -133,3 +145,6 @@ class Simulator:
             print(df)
             df.to_csv("agg/aggregated{}_{}.csv".format(self.ticker, self.time_frame))
             return df
+
+    def get_last(self, var):
+        return self.df["{}".format(var)].iloc[-1]
