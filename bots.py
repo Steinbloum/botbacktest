@@ -49,7 +49,7 @@ class Bot:
         self.open_position = True
         qtt_after_fees = qtt * 0.96
         size = qtt_after_fees / price
-        self.wallet.change_balance(-qtt)
+        # self.wallet.change_balance(-qtt)
         self.position_size = size
         self.history = self.history.append(
             {
@@ -62,12 +62,14 @@ class Bot:
             },
             ignore_index=True,
         )
+        print("order triggered")
+        # time.sleep(1)
 
     def close_position(self, motive):
         self.open_order = False
         self.open_position = False
         pnl = self.position_size * self.simulator.get_last_close()
-        self.wallet.change_balance(pnl)
+        # self.wallet.change_balance(pnl)
         self.pnl += pnl
         self.position_size = 0
         self.position_value = 0
@@ -121,26 +123,32 @@ class Bollinger_bot(Bot):
             ls = ["bolupcross", "boldowncross"]
             for bol in ls:
                 if self.simulator.get_last(bol) != 0:
-                    time.sleep(1)
+
                     if self.analist_df[bol].iloc[-1] != 0:
-                        time.sleep(1)
+
                         df[bol].iloc[-1] = self.analist_df[bol].iloc[-1] + 1
         self.analist_df = df
         return df
 
     def run(self):
-        
-
-
-
+        self.analyse()
+        if self.open_position == False:
+            if self.analist_df.boldowncross[-1] > 0:
+                self.trigger_order(self.wallet * 0.2, self.simulator.get_last_close())
+        elif self.open_position == True:
+            if self.simulator.get_last_close() >= self.analist_df.bolmav[-1]:
+                self.close_position("TP")
 
 
 wallet = Wallet()
 ethusdt15m = Simulator("ethusdt15m", folder, "ETHUSDT", "15m")
 bolbot = Bollinger_bot(ethusdt15m, wallet)
 print(bolbot.wallet)
-for n in range(251, 500):
+for n in range(251, 8000):
     ethusdt15m.update_df(n)
-    print(bolbot.analyse())
-    print(n)
-    print(bolbot.analist_df.bolmav[-1])
+    # print(bolbot.analyse())
+    bolbot.run()
+    # print(n)
+    # print(bolbot.analist_df.bolmav[-1])
+print(bolbot.history)
+bolbot.history.to_csv("testbolbot.csv")
