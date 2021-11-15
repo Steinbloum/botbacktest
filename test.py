@@ -2,17 +2,10 @@ import pandas as pd
 
 chart = 1000
 
-class Bot:
+price = 1000
+value = 100
 
-    def __init__(self, name, wallet = 1000):
-        self.name = name
-        self.wallet = wallet
-        self.entry = None
-        self.intial_size = None
-        self.initial_value = None
-        self.tp = None
-        self.sl = None
+size = value/price
+print(size)
 
-    def open_position(self, amount = 0.2, price):
-        
 

@@ -2,9 +2,7 @@ from ta.momentum import rsi
 from ta.volume import money_flow_index
 from ta.trend import ema_indicator, macd, EMAIndicator, macd_signal
 from ta.volatility import (
-    bollinger_hband_indicator,
-    bollinger_lband_indicator,
-    bollinger_mavg,
+    bollinger_mavg, bollinger_hband, bollinger_lband, bollinger_lband_indicator, bollinger_hband_indicator
 )
 import os
 import glob
@@ -112,9 +110,11 @@ class Simulator:
                 df["mfi"] = money_flow_index(df.high, df.low, df.close, df.volume)
                 df["macd"] = macd(df.close)
                 df["macds"] = macd_signal(df.close)
-                df["bolupcross"] = bollinger_hband_indicator(df.close)
+                df["bolup"] = bollinger_hband(df.close)
+                df['bolupcross'] = bollinger_hband_indicator(df.close)
                 df["bolmav"] = bollinger_mavg(df.close)
-                df["boldowncross"] = bollinger_lband_indicator(df.close)
+                df["boldown"] = bollinger_lband(df.close)
+                df['boldowncross'] = bollinger_lband_indicator(df.close)
                 df["EMA10"] = ema_indicator(df.close, window=10)
                 df["EMA25"] = ema_indicator(df.close, window=25)
                 df["EMA50"] = ema_indicator(df.close, window=50)
